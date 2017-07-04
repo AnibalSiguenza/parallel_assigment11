@@ -1,0 +1,11 @@
+*.o
+student/*.o
+student/*.d
+student/unit_test
+student/companytree_par
+student/companytree_seq
+test.o
+*.swp
+*.ppm
+a.out
+
