@@ -14,9 +14,44 @@ void reverse(char *str, int strlen)
     MPI_Comm_size(MPI_COMM_WORLD, &np);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    int strngChunkLen=1+((strlen-1)/np);
+    int NumRecieveData=strngChunkLen;
+
+    char * receiveBuffer=(char *)calloc(sizeof(char),strngChunkLen); //receive from streaming array
+    int * send_counts=(int *)calloc(sizeof(int), np); //streaming sendCounts
+    int * sendDispl=(int *)calloc(sizeof(int), np);   //streaming displ
+
+    int * recvcounts=(int *)calloc(sizeof(int), np); //gather counts
+    int * receiveDispl=(int *)calloc(sizeof(int), np); //gather displ
+
     if (rank == 0)
     {
-    	reverse_str(str, strlen);
+        NumRecieveData=strlen-strngChunkLen*(np-1);
+        send_counts[0]=NumRecieveData;
+        for(int i=1; i<np; i++){
+            send_counts[i]=strngChunkLen;
+        }
+
+        sendDispl[1]=NumRecieveData;
+        for(int i=2; i<np; i++){
+            sendDispl[i]=sendDispl[i-1]+strngChunkLen;
+        }
     }
+
+    MPI_Scatterv(str, send_counts, sendDispl, MPI_CHAR, receiveBuffer, NumRecieveData, MPI_CHAR, 0, MPI_COMM_WORLD);
     
+    reverse_str(receiveBuffer, NumRecieveData);
+
+    if(rank==0){
+        for(int i=0; i<np-1; i++){
+            receiveDispl[np-1-i]=i*strngChunkLen;
+        }
+        receiveDispl[0]=receiveDispl[1]+NumRecieveData;
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Gatherv(receiveBuffer, strngChunkLen, MPI_CHAR, str, recvcounts, receiveDispl, MPI_INT, 0, MPI_COMM_WORLD);
 }
+
+
+
