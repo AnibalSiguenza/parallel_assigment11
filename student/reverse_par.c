@@ -39,18 +39,33 @@ void reverse(char *str, int strlen)
     }
 
     MPI_Scatterv(str, send_counts, sendDispl, MPI_CHAR, receiveBuffer, NumRecieveData, MPI_CHAR, 0, MPI_COMM_WORLD);
-    
+
+    printf("from process %i received:%s\n", rank, receiveBuffer);
+
     reverse_str(receiveBuffer, NumRecieveData);
 
+    printf("from process %i reversed:%s\n", rank, receiveBuffer);
+
     if(rank==0){
-        for(int i=0; i<np-1; i++){
+        for(int i=0; i<np; i++){
             receiveDispl[np-1-i]=i*strngChunkLen;
         }
-        receiveDispl[0]=receiveDispl[1]+NumRecieveData;
+        //receiveDispl[0]=receiveDispl[1]+NumRecieveData+1;
+        for(int i=0; i<np; i++){
+            recvcounts[i]=strngChunkLen;
+        }
+        for(int i=0; i<np; i++){
+            printf("receiveDispl[%i]=%i\n", i, receiveDispl[i]);
+            printf("recvcounts[%i]=%i\n", i, recvcounts[i]);
+        }
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Gatherv(receiveBuffer, strngChunkLen, MPI_CHAR, str, recvcounts, receiveDispl, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(receiveBuffer, strngChunkLen, MPI_CHAR, str, recvcounts, receiveDispl, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+    /*if(rank==0){
+        str[receiveDispl[0]+NumRecieveData]=0;
+    }*/
 }
 
 
