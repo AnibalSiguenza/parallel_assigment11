@@ -14,6 +14,7 @@ void reverse(char *str, int strlen)
     MPI_Comm_size(MPI_COMM_WORLD, &np);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+<<<<<<< HEAD
     int * processor_chunksize=(int *)calloc(np, sizeof(np));
     int * processor_displasment=(int *)calloc(np, sizeof(np));
     int * return_displasment=(int *)calloc(np, sizeof(np));
@@ -46,3 +47,6 @@ void reverse(char *str, int strlen)
     }
     MPI_Gatherv(buffer, processor_chunksize[rank], MPI_CHAR,  str, processor_chunksize, return_displasment, MPI_CHAR, 0, MPI_COMM_WORLD);
 }
+
+
+
